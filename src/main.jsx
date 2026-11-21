@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { HashRouter, Link, NavLink, Route, Routes, useLocation } from 'react-router-dom';
+import { HashRouter, Link, Route, Routes, useLocation } from 'react-router-dom';
 import { ArrowUpRight, ArrowRight, ArrowDown, Moon, Sun, Menu, X, Download, MapPin, Github, Mail, Code2, Database, PenTool, Check, Search, Copy, ExternalLink, ChevronLeft, Star, CircleCheck, Share2, Users, Target, ClipboardList, Phone, Contact as ContactIcon, ChevronsDown } from 'lucide-react';
 import { projects, skillGroups } from './projects';
 import repositories from './repositories.json';
@@ -8,6 +8,13 @@ import './styles.css';
 
 const email = 'bunyimkong@gmail.com';
 const cvUrl = `${import.meta.env.BASE_URL}Kong-Bunyim-CV.pdf`;
+const navigationLinks = [
+  { label: 'Home', pathname: '/', hash: '' },
+  { label: 'Service', pathname: '/', hash: '#service' },
+  { label: 'About', pathname: '/', hash: '#about' },
+  { label: 'Projects', pathname: '/projects', hash: '' },
+  { label: 'Contact', pathname: '/', hash: '#contact' },
+];
 
 function useTheme() {
   const [preference, setPreference] = useState(() => { try { return localStorage.getItem('bunyim-theme'); } catch { return null; } });
@@ -31,17 +38,76 @@ function RouteEffects() {
 export function Header({ dark, toggle }) {
   const [open, setOpen] = useState(false);
   const location = useLocation();
+  const nav = useRef(null);
+  const menuToggle = useRef(null);
+
   useEffect(() => setOpen(false), [location]);
-  useEffect(() => { function close(e) { if (e.key === 'Escape') setOpen(false); } window.addEventListener('keydown', close); return () => window.removeEventListener('keydown', close); }, []);
-  return <header className="site-header"><div className="container header-inner">
-    <Link to="/" className="brand" aria-label="Kong Bunyim, home"><span className="brand-mark">kb<span>.</span></span><span className="brand-name">Kong Bunyim<span>Full-Stack Developer</span></span></Link>
-    <nav className={open ? 'nav open' : 'nav'} id="main-navigation" aria-label="Main navigation">
-      <NavLink to="/" end className={({ isActive }) => isActive && !location.hash ? 'active' : ''}>Home</NavLink>
-      <Link to="/#service">Service</Link><Link to="/#about">About</Link><NavLink to="/projects">Projects</NavLink><Link to="/#contact">Contact</Link>
-      <Link to="/#contact" className="mobile-contact">Let’s talk <ArrowUpRight size={16}/></Link>
-    </nav>
-    <div className="header-actions"><button className="icon-button theme-toggle" onClick={toggle} aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'} title={dark ? 'Switch to light mode' : 'Switch to dark mode'} aria-pressed={dark}>{dark ? <Sun size={19}/> : <Moon size={19}/>}</button><button className="icon-button menu-toggle" onClick={() => setOpen(!open)} aria-label={open ? 'Close navigation' : 'Open navigation'} aria-expanded={open} aria-controls="main-navigation">{open ? <X/> : <Menu/>}</button></div>
-  </div></header>;
+  useEffect(() => {
+    if (open) nav.current.querySelector('a')?.focus();
+  }, [open]);
+
+  function closeMenu() {
+    setOpen(false);
+    if (menuToggle.current.getClientRects().length) menuToggle.current.focus();
+  }
+
+  function handleEscape(event) {
+    if (open && event.key === 'Escape') closeMenu();
+  }
+
+  return (
+    <header className="site-header" onKeyDown={handleEscape}>
+      <div className="container header-inner">
+        <Link to="/" className="brand" aria-label="Kong Bunyim, home">
+          <span className="brand-mark">kb<span>.</span></span>
+          <span className="brand-name">Kong Bunyim<span>Full-Stack Developer</span></span>
+        </Link>
+        <nav ref={nav} className={open ? 'nav open' : 'nav'} id="main-navigation" aria-label="Main navigation">
+          {navigationLinks.map(({ label, pathname, hash }) => {
+            const current = location.pathname === pathname && location.hash === hash;
+            return (
+              <Link
+                key={label}
+                to={{ pathname, hash }}
+                aria-current={current ? (hash ? 'location' : 'page') : undefined}
+                onClick={open ? closeMenu : undefined}
+              >
+                {label}
+              </Link>
+            );
+          })}
+          <a className="header-cv mobile-cv" href={cvUrl} download onClick={closeMenu}>
+            <Download size={16} aria-hidden="true"/> Download CV
+          </a>
+        </nav>
+        <div className="header-actions">
+          <button
+            className="icon-button theme-toggle"
+            type="button"
+            aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'}
+            title={dark ? 'Switch to light mode' : 'Switch to dark mode'}
+            onClick={toggle}
+          >
+            {dark ? <Sun size={19} aria-hidden="true"/> : <Moon size={19} aria-hidden="true"/>}
+          </button>
+          <a className="header-cv desktop-cv" href={cvUrl} download>
+            <Download size={16} aria-hidden="true"/> Download CV
+          </a>
+          <button
+            ref={menuToggle}
+            className="icon-button menu-toggle"
+            type="button"
+            onClick={() => setOpen(!open)}
+            aria-label={open ? 'Close navigation' : 'Open navigation'}
+            aria-expanded={open}
+            aria-controls="main-navigation"
+          >
+            {open ? <X size={20} aria-hidden="true"/> : <Menu size={20} aria-hidden="true"/>}
+          </button>
+        </div>
+      </div>
+    </header>
+  );
 }
 function Eyebrow({ children, light = false }) { return <p className={`eyebrow${light ? ' light' : ''}`}><span/>{children}</p>; }
 function ProjectCard({ project }) {
