@@ -32,7 +32,11 @@ npm run preview
 
 - `src/projects.js`: curated projects, their hosted URLs, image URLs, featured flags, and skills.
 - `src/repositories.json`: snapshot of the public GitHub repository collection.
-- `src/main.jsx`: homepage content, experience, contact details, and page components.
+- `src/main.jsx` and `src/App.jsx`: React entry point, shared layout, and routes.
+- `src/pages/`: home, projects, and page-not-found screens.
+- `src/components/`: shared UI and homepage sections, including navigation, experience, and contact.
+- `src/hooks/useTheme.js`: system theme detection and saved theme preference.
+- `src/profile.js`: email address and CV download path.
 - `src/styles.css`: responsive styles and both theme palettes.
 - `public/Kong-Bunyim-CV.pdf`: original CV download.
 - `public/images/portrait-000.jpg`: portrait extracted from the supplied CV.
